@@ -29,7 +29,7 @@ class Heap:
 	def isEmpty(self):
 		return len(self.nodes) == 1
 
-	def extract_min(self):
+	def extractMin(self):
 		if self.isEmpty():
 			return
 		minimum = self.nodes[1]
@@ -46,3 +46,4 @@ class Heap:
 			self.nodes[i] = self.nodes[i // 2]
 			self.nodes[i // 2] = tmp
 			i = i // 2
+		return i

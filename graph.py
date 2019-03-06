@@ -1,4 +1,5 @@
 from heap import Heap
+from fibonacci import FibonacciHeap
 import time
 
 class Vertex:
@@ -21,7 +22,7 @@ class Vertex:
 		else: self.color = 0
 
 	def setDistance(self, dist):
-		self.distance = dist
+		self.dist = dist
 	
 	def getWeight(self, neighbor):
 		return self.adj[neighbor]
@@ -161,8 +162,8 @@ class Graph:
 	
 	def dijikstra(self, start):
 		for vertex in self.vertices.values():
-			vertex.dist = float('inf')
-			vertex.prev = None
+			vertex.setDistance(float('inf'))
+			vertex.setPrevious(None)
 		start.dist = 0
 		done = set()
 		queue = [obj for obj in self.vertices.values()]
@@ -175,20 +176,45 @@ class Graph:
 			done.add(u)
 			for v in self.getNeighbor_vertex(u.data):
 				if v.dist > u.dist + u.getWeight(v):
-					v.dist = u.dist + u.getWeight(v)
-					v.prev = u
+					v.setDistance(u.dist + u.getWeight(v))
+					v.setPrevious(u)
 
 	def dijikstra_heap(self, start):
 		for vertex in self.vertices.values():
-			vertex.dist = float('inf')
-			vertex.prev = None
+			vertex.setDistance(float('inf'))
+			vertex.setPrevious(None)
 		start.dist = 0
-		queue = [(start.data, start.dist)]
-		hqueue = Heap(queue)
+		hqueue = Heap()
+		hqueue.insertKey((start.data, start.dist))
 		while not hqueue.isEmpty():
-			u = self.vertices[hqueue.extract_min()[0]]
+			u = self.vertices[hqueue.extractMin()[0]]
 			for v in self.getNeighbor_vertex(u.data):
 				if v.dist > u.dist + u.getWeight(v):
-					v.dist = u.dist + u.getWeight(v)
-					v.prev = u
+					v.setDistance(u.dist + u.getWeight(v))
+					v.setPrevious(u)
 					hqueue.insertKey((v.data, v.dist))
+
+	def dijikstra_fib(self, start):
+		for vertex in self.vertices.values():
+			vertex.setDistance(float('inf'))
+			vertex.setPrevious(None)
+		start.dist = 0
+		hqueue = FibonacciHeap()
+		nodes = {start:hqueue.insert(start.data, start.dist)}
+		while not hqueue.isEmptyF():
+			u = self.vertices[hqueue.extractMinF().data]
+			for v in self.getNeighbor_vertex(u.data):
+				if v.dist > u.dist + u.getWeight(v):
+					v.setDistance(u.dist + u.getWeight(v))
+					v.setPrevious(u)
+					try: hqueue.decreaseKey(nodes[v], v.dist)
+					except KeyError: nodes.update({v:hqueue.insert(v.data, v.dist)})
+
+test = Graph()
+test.constructGraph('email-Eu-core-temporal.txt')
+t0 = time.time()
+test.dijikstra_fib(test.vertices['870'])
+print(test.findPath('870', '771'))
+t1 = time.time()
+print(t1 - t0)
+
